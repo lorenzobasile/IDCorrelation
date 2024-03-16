@@ -73,11 +73,27 @@ results=torch.load(path)
 
 fig, ax = plt.subplots(figsize=(14, 11))
 
-
-sns.heatmap(make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+if args.dataset=='imagenet':
+    sns.heatmap(make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+else:
+    sns.heatmap(make_sym(results.numpy())[idx][:,idx], ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
 
 #plt.title('$I_d$ correlation p-value', fontsize=20)
 plt.xticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=45)
 plt.yticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=0)
+
+if args.dataset!='imagenet':
+   # Add second layer of labels
+    second_layer_labels_x = ['TEXT', 'IMAGE']
+    second_layer_labels_y = ['TEXT', 'IMAGE']
+
+    plt.axhline(len(model_names)/2, color='k', linewidth=1.5)
+    plt.axvline(len(model_names)/2, color='k', linewidth=1.5)
+
+    for i, label in enumerate(second_layer_labels_x):
+        plt.text((len(model_names)/4)*(2*i+1), len(model_names)+1., label, ha='center', va='center', fontsize=16)
+
+    for i, label in enumerate(second_layer_labels_y):
+        plt.text(-1.2, (len(model_names)/4)*(2*i+1), label, ha='center', va='center', rotation=90, fontsize=16)
 
 plt.savefig(path[:-2]+"png", dpi=200, bbox_inches='tight')
