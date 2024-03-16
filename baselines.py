@@ -34,6 +34,9 @@ args = parser.parse_args()
 
 models=sorted(os.listdir(f'./representations/{args.dataset}'))
 
+if not os.path.exists(f'results/{args.dataset}/baselines'):
+    os.makedirs(f'results/{args.dataset}/baselines')
+
 linear_cka=torch.zeros(len(models), len(models))
 rbf_cka=torch.zeros(len(models), len(models))
 dcor=torch.zeros(len(models), len(models))
@@ -44,7 +47,6 @@ for i, model1 in enumerate(tqdm(models)):
         P=torch.randperm(len(rep1))[:20000]
     rep1=rep1[P]
     for j, model2 in enumerate(models[i:]):
-        print(model1, model2)
         rep2=torch.nn.functional.normalize(torch.load(f'./representations/{args.dataset}/{model2}'))[P]
         svcca[i, j+i]=svcca_distance(rep1.to('cuda'), rep2.to('cuda'), accept_rate=0.99, backend='svd').cpu()
         dcor[i, j+i]=Distance_Correlation(rep1.to('cuda'), rep2.to('cuda')).cpu()
@@ -52,8 +54,8 @@ for i, model1 in enumerate(tqdm(models)):
         rbf_cka[i, j+i]=functional.rbf_cka(rep1.to('cuda'), rep2.to('cuda'), sigma=0.4).cpu()
         
         
-torch.save(linear_cka, f'results/{args.dataset}/linear_cka.pt')
-torch.save(rbf_cka, f'results/{args.dataset}/rbf_cka.pt')
-torch.save(dcor, f'results/{args.dataset}/dcor.pt')
-torch.save(svcca, f'results/{args.dataset}/svcca.pt')
+torch.save(linear_cka, f'results/{args.dataset}/baselines/linear_cka.pt')
+torch.save(rbf_cka, f'results/{args.dataset}/baselines/rbf_cka.pt')
+torch.save(dcor, f'results/{args.dataset}/baselines/dcor.pt')
+torch.save(svcca, f'results/{args.dataset}/baselines/svcca.pt')
 
