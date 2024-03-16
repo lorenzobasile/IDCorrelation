@@ -69,14 +69,21 @@ else:
     model_names=model_names[idx]
     isvision=isvision[idx]
 
+
 results=torch.load(path)
 
 fig, ax = plt.subplots(figsize=(14, 11))
 
 if args.dataset=='imagenet':
-    sns.heatmap(make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    if args.metric=='svcca':
+        sns.heatmap(1-make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    else:
+        sns.heatmap(make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
 else:
-    sns.heatmap(make_sym(results.numpy())[idx][:,idx], ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    if args.metric=='svcca':
+        sns.heatmap(1-make_sym(results.numpy())[idx][:,idx], ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    else: 
+        sns.heatmap(make_sym(results.numpy())[idx][:,idx], ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
 
 #plt.title('$I_d$ correlation p-value', fontsize=20)
 plt.xticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=45)
