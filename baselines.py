@@ -27,6 +27,8 @@ def Distance_Correlation(latent, control):
     return correlation_r
 
 torch.manual_seed(0)
+device='cuda' if torch.cuda.is_available() else 'cpu'
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default="imagenet", help="dataset")
@@ -34,8 +36,8 @@ args = parser.parse_args()
 
 models=sorted(os.listdir(f'./representations/{args.dataset}'))
 
-if not os.path.exists(f'results/{args.dataset}/baselines'):
-    os.makedirs(f'results/{args.dataset}/baselines')
+if not os.path.exists(f'results/{args.dataset}'):
+    os.makedirs(f'results/{args.dataset}')
 
 linear_cka=torch.zeros(len(models), len(models))
 rbf_cka=torch.zeros(len(models), len(models))
@@ -48,14 +50,14 @@ for i, model1 in enumerate(tqdm(models)):
     rep1=rep1[P]
     for j, model2 in enumerate(models[i:]):
         rep2=torch.nn.functional.normalize(torch.load(f'./representations/{args.dataset}/{model2}'))[P]
-        svcca[i, j+i]=svcca_distance(rep1.to('cuda'), rep2.to('cuda'), accept_rate=0.99, backend='svd').cpu()
-        dcor[i, j+i]=Distance_Correlation(rep1.to('cuda'), rep2.to('cuda')).cpu()
-        linear_cka[i, j+i]=functional.linear_cka(rep1.to('cuda'), rep2.to('cuda')).cpu()
-        rbf_cka[i, j+i]=functional.rbf_cka(rep1.to('cuda'), rep2.to('cuda'), sigma=0.4).cpu()
+        svcca[i, j+i]=svcca_distance(rep1.to(device), rep2.to(device), accept_rate=0.99, backend='svd').cpu()
+        dcor[i, j+i]=Distance_Correlation(rep1.to(device), rep2.to(device)).cpu()
+        linear_cka[i, j+i]=functional.linear_cka(rep1.to(device), rep2.to(device)).cpu()
+        rbf_cka[i, j+i]=functional.rbf_cka(rep1.to(device), rep2.to(device), sigma=0.4).cpu()
         
         
-torch.save(linear_cka, f'results/{args.dataset}/baselines/linear_cka.pt')
-torch.save(rbf_cka, f'results/{args.dataset}/baselines/rbf_cka.pt')
-torch.save(dcor, f'results/{args.dataset}/baselines/dcor.pt')
-torch.save(svcca, f'results/{args.dataset}/baselines/svcca.pt')
+torch.save(linear_cka, f'results/{args.dataset}/linear_cka.pt')
+torch.save(rbf_cka, f'results/{args.dataset}/rbf_cka.pt')
+torch.save(dcor, f'results/{args.dataset}/dcor.pt')
+torch.save(svcca, f'results/{args.dataset}/svcca.pt')
 

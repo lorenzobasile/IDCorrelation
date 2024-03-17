@@ -15,14 +15,17 @@ def estimate_id(X, algorithm='twoNN', k=100, fraction=0.9):
         return MLE(X, k)
 
 def MLE(X, k=100):
+    X=X.double()
     X=torch.cdist(X,X)
-    Y=torch.topk(X, k+1, dim=1, largest=False)[0]
-    Y=torch.log(torch.reciprocal(torch.div(Y, Y[:,-1].reshape(-1,1))[:,1:]))
+    Y=torch.topk(X, k+1, dim=1, largest=False)[0][:,1:]
+    Y=Y[Y[:,0]!=0]
+    Y=Y[Y[:,0]+1e-5<Y[:,-1]]
+    Y=torch.log(torch.reciprocal(torch.div(Y, Y[:,-1].reshape(-1,1))))
     dim=torch.reciprocal(1/(k-1)*torch.sum(Y, dim=1))
     return dim.mean()
 
 def twoNN(X,fraction=0.9):
-    X=X.double()    
+    X=X.double()
     X=torch.cdist(X,X)
     Y=torch.topk(X, 3, dim=1, largest=False)[0]
     # clean data

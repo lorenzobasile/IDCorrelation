@@ -8,10 +8,9 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default="imagenet", help="dataset")
 parser.add_argument('--metric', type=str, default='pvalues', help="metric to plot")
-parser.add_argument('--id_alg', type=str, default='twoNN', help="ID estimation algorithm")
 args = parser.parse_args()
 
-path = f'results/{args.dataset}/{args.id_alg}/{args.metric}.pt'
+path = f'results/{args.dataset}/{args.metric}.pt'
 
 def make_sym(matrix):
     sym=matrix+matrix.T
