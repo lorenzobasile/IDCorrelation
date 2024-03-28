@@ -32,7 +32,7 @@ with torch.no_grad():
         else:
             x=processor(x, return_tensors="pt")
         out = model(**x.to(device), output_hidden_states=True)
-        if conv:
+        if conv or 'siglip' in args.model:
             reps = out['pooler_output'].reshape(N, -1)
             print(reps.shape)
         elif 'clip-v' in args.model:
