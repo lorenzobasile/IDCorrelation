@@ -3,10 +3,7 @@ import math
 
 import torch
 
-def Distance_Correlation(latent, control):
-
-    latent = torch.nn.functional.normalize(latent)
-    control = torch.nn.functional.normalize(control)
+def distance_correlation(latent, control):
 
     matrix_a = torch.cdist(latent, latent)
     matrix_b = torch.cdist(control, control)
@@ -16,8 +13,7 @@ def Distance_Correlation(latent, control):
     Gamma_XY = torch.sum(matrix_A * matrix_B)/ (matrix_A.shape[0] * matrix_A.shape[1])
     Gamma_XX = torch.sum(matrix_A * matrix_A)/ (matrix_A.shape[0] * matrix_A.shape[1])
     Gamma_YY = torch.sum(matrix_B * matrix_B)/ (matrix_A.shape[0] * matrix_A.shape[1])
-
-
+    
     correlation_r = Gamma_XY / torch.sqrt(Gamma_XX * Gamma_YY + 1e-9)
     return correlation_r
 
