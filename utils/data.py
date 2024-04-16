@@ -22,7 +22,8 @@ def get_data(dataset_name):
 
         def collate(modality, samples):
             images = [sample['image'].convert("RGB") for sample in samples]
-            return images
+            labels = torch.tensor([sample['label'] for sample in samples])
+            return images, labels
         return dataset, collate
     elif dataset_name=='N24News':
         def clean_article(item):

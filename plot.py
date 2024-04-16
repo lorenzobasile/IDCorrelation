@@ -42,27 +42,28 @@ else:
             'bert-base-cased',
             'bert-base-uncased',
             'google_efficientnet-b0',
+            'google_electra-base-discriminator',
             'google_vit-base-patch16-224',
             'google_vit-hybrid-base-bit-384',
             'microsoft_resnet-18',
             'openai_clip-t-vit-base-patch16',
             'openai_clip-v-vit-base-patch16',
-            'roberta-base',
             ])
     model_names = np.array(['ALBERT',
             'BERT-C',
             'BERT-U',
             'EfficientNet',
+            'Electra',
             'ViT',
             'ViT-hybrid',
             'ResNet',
             'CLIP-T',
             'CLIP-V',
-            'RoBERTa',
             ])
     isvision=np.ones(len(model_list))
     isvision[np.where(np.char.find(model_list, 'bert')>=0)[0]]=0
     isvision[np.where(np.char.find(model_list, 'clip-t')>=0)[0]]=0
+    isvision[np.where(np.char.find(model_list, 'electra')>=0)[0]]=0
     idx=np.argsort(isvision)
     model_list=model_list[idx]
     model_names=model_names[idx]
@@ -74,15 +75,9 @@ results=torch.load(path)
 fig, ax = plt.subplots(figsize=(14, 11))
 
 if args.dataset=='imagenet':
-    if args.metric=='svcca':
-        sns.heatmap(1-make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
-    else:
-        sns.heatmap(make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    sns.heatmap(make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
 else:
-    if args.metric=='svcca':
-        sns.heatmap(1-make_sym(results.numpy())[idx][:,idx], ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
-    else: 
-        sns.heatmap(make_sym(results.numpy())[idx][:,idx], ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    sns.heatmap(make_sym(results.numpy())[idx][:,idx], ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
 
 #plt.title('$I_d$ correlation p-value', fontsize=20)
 plt.xticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=45)
@@ -102,4 +97,4 @@ if args.dataset!='imagenet':
     for i, label in enumerate(second_layer_labels_y):
         plt.text(-1.2, (len(model_names)/4)*(2*i+1), label, ha='center', va='center', rotation=90, fontsize=16)
 
-plt.savefig(path[:-2]+"png", dpi=200, bbox_inches='tight')
+plt.savefig(path[:-2]+"svg", dpi=200, bbox_inches='tight', format='svg')

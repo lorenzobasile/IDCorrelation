@@ -1,8 +1,7 @@
 import torch
 from tqdm import tqdm
-from intrinsic_dimension import id_correlation, estimate_id
+from utils.intrinsic_dimension import id_correlation, estimate_id
 import os
-import numpy as np
 import argparse
 
 torch.manual_seed(0)
@@ -12,8 +11,9 @@ parser.add_argument('--dataset', type=str, default="imagenet", help="dataset")
 
 args = parser.parse_args()
 
-models=sorted(os.listdir(f'./representations/{args.dataset}'))
+N=30000
 
+models=sorted(os.listdir(f'./representations/{args.dataset}'))
 if not os.path.exists(f'results/{args.dataset}'):
     os.makedirs(f'results/{args.dataset}')
 
@@ -26,14 +26,16 @@ zscores=torch.zeros(len(models), len(models))
 noshuffle=torch.zeros(len(models), len(models))
 shuffle_mean=torch.zeros(len(models), len(models))
 shuffle_std=torch.zeros(len(models), len(models))
-for i, model1 in enumerate(tqdm(models)):
-    rep1=torch.nn.functional.normalize(torch.load(f'./representations/{args.dataset}/{model1}'))
+for i, model1 in enumerate(tqdm(models)): 
+    rep1=torch.load(f'./representations/{args.dataset}/{model1}')
+    rep1=torch.load(f'./representations/{args.dataset}/{model1}')
     if i==0:
-        P=torch.randperm(len(rep1))[:20000]
+        P=torch.randperm(len(rep1))[:N]
     rep1=rep1[P]
+    #rep1=shuffle_keeping_class(rep1, labels)
     ids[i]=estimate_id(rep1.to(device), id_alg).item()
     for j, model2 in enumerate(models[i:]):
-        rep2=torch.nn.functional.normalize(torch.load(f'./representations/{args.dataset}/{model2}'))[P]
+        rep2=torch.load(f'./representations/{args.dataset}/{model2}')[P]
         corr=id_correlation(rep1, rep2, 200, id_alg)
         zscores[i,j+i]=corr['Z']
         pvalues[i,j+i]=corr['p']

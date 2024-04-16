@@ -7,6 +7,7 @@ from transformers import SiglipImageProcessor, SiglipVisionModel
 from transformers import BertTokenizer, BertModel
 from transformers import RobertaTokenizer, RobertaModel
 from transformers import AlbertTokenizer, AlbertModel
+from transformers import ElectraTokenizer, ElectraModel
 
 
 
@@ -47,6 +48,10 @@ def get_model(model_name):
         clf=False
         conv=False
         return BertTokenizer.from_pretrained(model_name), BertModel.from_pretrained(model_name), clf, conv, 'text'
+    elif 'electra' in model_name:
+        clf=False
+        conv=False
+        return ElectraTokenizer.from_pretrained(model_name), ElectraModel.from_pretrained(model_name), clf, conv, 'text'
     else:
         clf=True
         conv=True

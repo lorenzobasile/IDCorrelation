@@ -2,30 +2,24 @@ import torch
 import numpy as np
 from scipy import stats
 from time import time
+from utils.utils import cat, normalize, shuffle
 
-def cat(l):
-    return torch.cat(l, axis=1)
-def shuffle(data):
-    return data[torch.randperm(len(data))]
-
-def estimate_id(X, algorithm='twoNN', k=100, fraction=0.9):
+def estimate_id(X, algorithm='twoNN', k=100, fraction=0.9, full_output=False):
     if algorithm=='twoNN':
         return twoNN(X, fraction)
     elif algorithm=='MLE':
-        return MLE(X, k)
+        return MLE(X, k, full_output)
 
-def MLE(X, k=100):
-    X=X.double()
+def MLE(X, k=100, full_output=False):
+    X=X.float()
     X=torch.cdist(X,X)
     Y=torch.topk(X, k+1, dim=1, largest=False)[0][:,1:]
-    Y=Y[Y[:,0]!=0]
-    Y=Y[Y[:,0]+1e-5<Y[:,-1]]
     Y=torch.log(torch.reciprocal(torch.div(Y, Y[:,-1].reshape(-1,1))))
     dim=torch.reciprocal(1/(k-1)*torch.sum(Y, dim=1))
-    return dim.mean()
+    return dim if full_output else dim.mean()
 
 def twoNN(X,fraction=0.9):
-    X=X.double()
+    X=X.float()
     X=torch.cdist(X,X)
     Y=torch.topk(X, 3, dim=1, largest=False)[0]
     # clean data
@@ -43,7 +37,7 @@ def twoNN(X,fraction=0.9):
     # define mu and Femp
     N = len(k1)
     mu,_ = torch.sort(torch.divide(k2, k1).flatten())
-    Femp = (torch.arange(1,N+1,dtype=torch.float64))/N
+    Femp = (torch.arange(1,N+1,dtype=torch.float32))/N
     # take logs (leave out the last element because 1-Femp is zero there)
     x = torch.log(mu[:-1])[0:npoints]
     y = -torch.log(1 - Femp[:-1])[0:npoints]
@@ -53,10 +47,12 @@ def twoNN(X,fraction=0.9):
     return slope.solution.squeeze()
 
 def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN'):
+    dataset1=normalize(dataset1)
+    dataset2=normalize(dataset2)
     device='cuda' if torch.cuda.is_available() else 'cpu'
     t0=time()
     id0=estimate_id(cat([dataset1, dataset2]).to(device), algorithm).item()
-    shuffled_id=torch.zeros(N, dtype=torch.double)
+    shuffled_id=torch.zeros(N, dtype=torch.float)
     for i in range(N):
         shuffled_id[i]=estimate_id(cat([dataset1, shuffle(dataset2)]).to(device), algorithm).item()
     id_shuffled=shuffled_id.mean()

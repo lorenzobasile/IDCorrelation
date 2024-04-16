@@ -135,3 +135,9 @@ dmypy.json
 data/
 
 representations/
+
+slurm*
+
+*.svg
+
+trash/
