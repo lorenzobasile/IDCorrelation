@@ -25,6 +25,15 @@ def get_data(dataset_name):
             labels = torch.tensor([sample['label'] for sample in samples])
             return images, labels
         return dataset, collate
+    elif dataset_name=='imagenet_sketch':
+        dataset = load_dataset("imagenet_sketch", split="train")
+
+        def collate(modality, samples):
+            images = [sample['image'].convert("RGB") for sample in samples]
+            labels = torch.tensor([sample['label'] for sample in samples])
+            return images, labels
+        return dataset, collate
+    
     elif dataset_name=='N24News':
         def clean_article(item):
             def clean_text(text):
