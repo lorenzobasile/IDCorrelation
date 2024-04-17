@@ -19,7 +19,6 @@ def MLE(X, k=100, full_output=False):
     return dim if full_output else dim.mean()
 
 def twoNN(X,fraction=0.9):
-    X=X.float()
     X=torch.cdist(X,X)
     Y=torch.topk(X, 3, dim=1, largest=False)[0]
     # clean data
@@ -37,7 +36,7 @@ def twoNN(X,fraction=0.9):
     # define mu and Femp
     N = len(k1)
     mu,_ = torch.sort(torch.divide(k2, k1).flatten())
-    Femp = (torch.arange(1,N+1,dtype=torch.float32))/N
+    Femp = (torch.arange(1,N+1,dtype=X.dtype))/N
     # take logs (leave out the last element because 1-Femp is zero there)
     x = torch.log(mu[:-1])[0:npoints]
     y = -torch.log(1 - Femp[:-1])[0:npoints]
@@ -59,7 +58,7 @@ def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN'):
     std_shuffled=shuffled_id.std()
     Z=(id0-id_shuffled)/std_shuffled
     p=((shuffled_id<id0).sum()+1)/(N+1) #according to permutation test, not Z-test
-    return {'Z': Z, 'p':p,  'original Id': id0, 'Mean shuffled Id': id_shuffled, 'Std shuffled Id': std_shuffled, 'time': time()-t0}
+    return {'Z': Z.item(), 'p':p.item(),  'original Id': id0, 'Mean shuffled Id': id_shuffled, 'Std shuffled Id': std_shuffled, 'time': time()-t0}
 
 def ks_test(tensor1, tensor2):
     data_all = torch.cat([tensor1, tensor2], dim=0)

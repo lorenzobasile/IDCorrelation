@@ -28,7 +28,6 @@ shuffle_mean=torch.zeros(len(models), len(models))
 shuffle_std=torch.zeros(len(models), len(models))
 for i, model1 in enumerate(tqdm(models)): 
     rep1=torch.load(f'./representations/{args.dataset}/{model1}')
-    rep1=torch.load(f'./representations/{args.dataset}/{model1}')
     if i==0:
         P=torch.randperm(len(rep1))[:N]
     rep1=rep1[P]

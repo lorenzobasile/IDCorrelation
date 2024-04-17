@@ -141,3 +141,5 @@ slurm*
 *.svg
 
 trash/
+
+*.key

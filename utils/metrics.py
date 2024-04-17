@@ -13,9 +13,9 @@ def distance_correlation(latent, control):
     Gamma_XY = torch.sum(matrix_A * matrix_B)/ (matrix_A.shape[0] * matrix_A.shape[1])
     Gamma_XX = torch.sum(matrix_A * matrix_A)/ (matrix_A.shape[0] * matrix_A.shape[1])
     Gamma_YY = torch.sum(matrix_B * matrix_B)/ (matrix_A.shape[0] * matrix_A.shape[1])
-    
+
     correlation_r = Gamma_XY / torch.sqrt(Gamma_XX * Gamma_YY + 1e-9)
-    return correlation_r
+    return correlation_r.item()
 
 def linear_cka(x: torch.Tensor, y: torch.Tensor):
     return cka(x, y, hsic=linear_hsic)
