@@ -1,8 +1,5 @@
 import torch
 import numpy as np
-from scipy import stats
-from time import time
-from utils.utils import cat, normalize, shuffle
 
 def estimate_id(X, algorithm='twoNN', k=100, fraction=0.9, full_output=False):
     if algorithm=='twoNN':
@@ -44,56 +41,3 @@ def twoNN(X,fraction=0.9):
     y=y.to(x.device)
     slope=torch.linalg.lstsq(x.unsqueeze(-1),y.unsqueeze(-1))
     return slope.solution.squeeze()
-
-def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN'):
-    dataset1=normalize(dataset1)
-    dataset2=normalize(dataset2)
-    device='cuda' if torch.cuda.is_available() else 'cpu'
-    t0=time()
-    id0=estimate_id(cat([dataset1, dataset2]).to(device), algorithm).item()
-    shuffled_id=torch.zeros(N, dtype=torch.float)
-    for i in range(N):
-        shuffled_id[i]=estimate_id(cat([dataset1, shuffle(dataset2)]).to(device), algorithm).item()
-    id_shuffled=shuffled_id.mean()
-    std_shuffled=shuffled_id.std()
-    Z=(id0-id_shuffled)/std_shuffled
-    p=((shuffled_id<id0).sum()+1)/(N+1) #according to permutation test, not Z-test
-    return {'Z': Z.item(), 'p':p.item(),  'original Id': id0, 'Mean shuffled Id': id_shuffled, 'Std shuffled Id': std_shuffled, 'time': time()-t0}
-
-def ks_test(tensor1, tensor2):
-    data_all = torch.cat([tensor1, tensor2], dim=0)
-    cdf1 = torch.searchsorted(tensor1, data_all, side='right') / len(tensor1)
-    cdf2 = torch.searchsorted(tensor2, data_all, side='right') / len(tensor2)
-    cddiffs = torch.abs(cdf1 - cdf2)
-    score = torch.max(cddiffs).item()
-    en= len(tensor1) * len(tensor2) / (len(tensor1) + len(tensor2))
-    return score, stats.distributions.kstwo.sf(score, np.round(en))
-
-def ks_correlation(dataset1, dataset2, allpairs=False, N=10):
-    device='cuda' if torch.cuda.is_available() else 'cpu'
-    t0=time()
-    d0=torch.nn.functional.pdist(cat([dataset1, dataset2]).to(device)).sort()[0].cpu()
-    shuffled=torch.zeros(N,len(d0))
-    KS_orig=[]
-    KS_shuf=[]
-    for i in range(N):
-        shuffled[i]=torch.nn.functional.pdist(cat([dataset1, shuffle(dataset2)]).to(device)).sort()[0].cpu()
-        KS_orig.append(ks_test(d0, shuffled[i])[0])
-    # this scales with N^2
-    if allpairs:
-        for i in range(N-1):
-            for j in range(i+1,N):
-                KS_shuf.append(ks_test(shuffled[i].to(device), shuffled[j].to(device))[0])
-    else:
-    #usually it's sufficient to take N shuffled pairs
-        for _ in range(N):
-            idx=np.random.choice(N, 2, replace=False)
-            i=idx[0]
-            j=idx[1]
-            KS_shuf.append(ks_test(shuffled[i].to(device), shuffled[j].to(device))[0])
-    KS_orig=np.array(KS_orig)
-    KS_shuf=np.array(KS_shuf)
-    res=stats.kstest(KS_orig, KS_shuf)
-    score=res.statistic
-    p=res.pvalue
-    return {'score': score, 'p':p, 'time': time()-t0}

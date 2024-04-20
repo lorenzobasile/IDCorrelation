@@ -1,7 +1,28 @@
 import functools
 import math
+from time import time
 
 import torch
+from utils.intrinsic_dimension import estimate_id
+from utils.utils import cat, normalize, shuffle
+
+
+def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN'):
+    dataset1=normalize(dataset1)
+    dataset2=normalize(dataset2)
+    device='cuda' if torch.cuda.is_available() else 'cpu'
+    t0=time()
+    id0=estimate_id(cat([dataset1, dataset2]).to(device), algorithm).item()
+    shuffled_id=torch.zeros(N, dtype=torch.float)
+    for i in range(N):
+        shuffled_id[i]=estimate_id(cat([dataset1, shuffle(dataset2)]).to(device), algorithm).item()
+    id_shuffled=shuffled_id.mean()
+    std_shuffled=shuffled_id.std()
+    Z=(id0-id_shuffled)/std_shuffled
+    p=((shuffled_id<id0).sum()+1)/(N+1) #according to permutation test, not Z-test
+    return {'Z': Z.item(), 'p':p.item(),  'original Id': id0, 'Mean shuffled Id': id_shuffled, 'Std shuffled Id': std_shuffled, 'time': time()-t0}
+
+
 
 def distance_correlation(latent, control):
 
