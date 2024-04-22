@@ -1,6 +1,7 @@
 import torch
 from tqdm import tqdm
-from utils.intrinsic_dimension import id_correlation, estimate_id
+from utils.metrics import id_correlation
+from utils.intrinsic_dimension import estimate_id
 import os
 import argparse
 

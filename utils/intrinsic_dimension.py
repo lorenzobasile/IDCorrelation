@@ -15,8 +15,9 @@ def MLE(X, k=100, full_output=False):
     dim=torch.reciprocal(1/(k-1)*torch.sum(Y, dim=1))
     return dim if full_output else dim.mean()
 
-def twoNN(X,fraction=0.9):
-    X=torch.cdist(X,X)
+def twoNN(X,fraction=0.9,distances=False):
+    if not distances:
+        X=torch.cdist(X,X)
     Y=torch.topk(X, 3, dim=1, largest=False)[0]
     # clean data
     k1 = Y[:,1]
