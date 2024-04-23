@@ -28,7 +28,8 @@ def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN', return_pvalue=T
 
 
 def distance_correlation(latent, control):
-
+    latent = normalize(latent)
+    control = normalize(control)
     matrix_a = torch.cdist(latent, latent)
     matrix_b = torch.cdist(control, control)
     matrix_A = matrix_a - torch.mean(matrix_a, dim = 0, keepdims= True) - torch.mean(matrix_a, dim = 1, keepdims= True) + torch.mean(matrix_a)
