@@ -1,5 +1,5 @@
 import torch
-from utils.metrics import id_correlation, distance_correlation, rbf_cka, linear_cka
+from utils import metrics
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from anatome.similarity import svcca_distance
@@ -30,10 +30,11 @@ class MLP(torch.nn.Module):
     
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 idcorr = []
-dcorr = []
-cka = []
+dcor = []
+rbf_cka = []
+linear_cka = []
 cca = []
-for slope in tqdm(torch.arange(1, -0.1, -0.1)):
+for slope in tqdm(torch.arange(1, -0.01, -0.01)):
     model = MLP(10, slope).to(device)
     loss = torch.nn.CrossEntropyLoss()
     '''
@@ -52,65 +53,21 @@ for slope in tqdm(torch.arange(1, -0.1, -0.1)):
         x, y = next(iter(testloader))
         x=x.to(device)
         out, rep = model(x.to(device))
-        print("Acc: ", torch.sum(torch.argmax(out, dim=1)==y.to(device)).item()/10000)
-        idcorr.append(id_correlation(rep.to(device), x, N=100)['corr'])
-        dcorr.append(distance_correlation(rep.to(device), x))
-        cka.append(rbf_cka(rep.to(device), x).cpu())
+        idcorr.append(metrics.id_correlation(rep.to(device), x, N=1)['corr'])
+        dcor.append(metrics.distance_correlation(rep.to(device), x))
+        rbf_cka.append(metrics.rbf_cka(rep.to(device), x).cpu())
+        linear_cka.append(metrics.linear_cka(rep.to(device), x).cpu())
         cca.append(1-svcca_distance(rep.to(device), x, accept_rate=0.99, backend='svd').cpu())
-plt.plot(idcorr, label='idcorr (ours)')
-plt.plot(dcorr, label='dcorr')
-plt.plot(cca, label='cca')
-plt.plot(cka, label='cka')
-plt.legend()
-plt.savefig('mnist_random.png')
-exit()
-for x, y in trainloader:
-        x = x.view(x.size(0), -1)
-        embedding1 = model(x)
-        idcorr.append(id_correlation(embedding1, x, N=100)['p'])
-        dcorr.append(distance_correlation(embedding1, x))
-        cka.append(linear_cka(embedding1, x).cpu())
-        cca.append(1-svcca_distance(embedding1, x, accept_rate=0.99, backend='svd').cpu())
-        break
+idcorr=torch.tensor(idcorr)
+dcor=torch.tensor(dcor)
+rbf_cka=torch.tensor(rbf_cka)
+linear_cka=torch.tensor(linear_cka)
+cca=torch.tensor(cca)
 
-with torch.no_grad():
-    dim=512
-    data=torch.randn(10000, dim)
+torch.save(idcorr, 'results/mnist/idcorr.pt')
+torch.save(dcor, 'results/mnist/dcor.pt')
+torch.save(rbf_cka, 'results/mnist/rbf_cka.pt')
+torch.save(linear_cka, 'results/mnist/linear_cka.pt')
+torch.save(cca, 'results/mnist/svcca.pt')
 
-    #write a simple neural network that reduces the dimensionality to 2
-    class MLP(torch.nn.Module):
-        def __init__(self, dim, num_layers):
-            super(MLP, self).__init__()
-            self.num_layers = num_layers
 
-            self.layers = torch.nn.ModuleList()
-            for _ in range(num_layers):
-                self.layers.append(torch.nn.Linear(dim, dim, bias=False))
-            
-            # Define output layer
-            
-        def forward(self, x, slope):
-            
-            # Hidden layers
-            for layer in self.layers[:-1]:
-                x = torch.nn.functional.leaky_relu(layer(x), slope)
-            x = self.layers[-1](x)
-            return x
-
-    idcorr=[]
-    dcorr=[]
-    cca=[]
-    model = MLP(dim, 10)
-    for slope in tqdm(torch.arange(1, -0.01, -1)):
-        embedding1 = model.to('cuda')(data.to('cuda'), slope)
-        #embedding2 = Net(128, slope)(data)
-        idcorr.append(id_correlation(embedding1, data.to('cuda'), N=100)['p'])
-        dcorr.append(distance_correlation(embedding1, data.to('cuda')))
-        print(dcorr[-1])
-        print(dcor.distance_correlation(embedding1.cpu(), data))
-        cca.append(1-svcca_distance(embedding1, data.to('cuda'), accept_rate=0.99, backend='svd').cpu())
-        #cka.append(linear_cka(embedding1, data.to('cuda')).cpu())
-    plt.plot(idcorr, label='p-value (ours)')
-    plt.plot(dcorr, label='distance correlation')
-    plt.plot(cca, label='cca')
-    plt.legend()
