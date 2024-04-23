@@ -23,7 +23,7 @@ def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN', return_pvalue=T
         p=(((shuffled_id<original_id).sum()+1)/(N+1)).item() #according to permutation test
     else:
         p=None
-    return {'corr': corr, 'p': p}
+    return {'corr': corr, 'p': p, 'id': original_id, 'id1': id_1, 'id2': id_2}
 
 
 
