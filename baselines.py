@@ -34,10 +34,9 @@ for i, model1 in enumerate(tqdm(models)):
     for j, model2 in enumerate(models[i:]):
         rep2=torch.load(f'./representations/{args.dataset}/{model2}')[P]
         svcca[i, j+i]=1-svcca_distance(rep1.to(device), rep2.to(device), accept_rate=0.99, backend='svd').cpu()
-        dcor[i, j+i]=metrics.distance_correlation(rep1.to(device), rep2.to(device)).cpu()
+        dcor[i, j+i]=metrics.distance_correlation(rep1.to(device), rep2.to(device))
         linear_cka[i, j+i]=metrics.linear_cka(rep1.to(device), rep2.to(device)).cpu()
         rbf_cka[i, j+i]=metrics.rbf_cka(rep1.to(device), rep2.to(device)).cpu()
-        print(svcca[i, j+i], dcor[i, j+i], linear_cka[i, j+i], rbf_cka[i, j+i])
         
         
 torch.save(linear_cka, f'results/{args.dataset}/linear_cka.pt')

@@ -3,7 +3,6 @@ from utils.metrics import id_correlation, distance_correlation, rbf_cka, linear_
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from anatome.similarity import svcca_distance
-import dcor
 import torchvision
 
 transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),torchvision.transforms.Lambda(torch.flatten)])
@@ -20,7 +19,7 @@ class MLP(torch.nn.Module):
         self.layers = torch.nn.ModuleList()
         for _ in range(num_layers):
             self.layers.append(torch.nn.Linear(784, 784, bias=False))
-        self.head = torch.nn.Linear(dim, 10)
+        self.head = torch.nn.Linear(784, 10)
         
     def forward(self, x):
         for layer in self.layers:
@@ -35,9 +34,10 @@ dcorr = []
 cka = []
 cca = []
 for slope in tqdm(torch.arange(1, -0.1, -0.1)):
-    model = MLP(10, slope)
+    model = MLP(10, slope).to(device)
     loss = torch.nn.CrossEntropyLoss()
-    optimizer = torch.nn.optim.Adam(model.parameters(), lr=0.001)
+    '''
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     for epoch in range(10):
         for x, y in trainloader:
             x = x.to(device)
@@ -47,16 +47,22 @@ for slope in tqdm(torch.arange(1, -0.1, -0.1)):
             optimizer.zero_grad()
             l.backward()
             optimizer.step()
+    '''
     with torch.no_grad():
         x, y = next(iter(testloader))
         x=x.to(device)
         out, rep = model(x.to(device))
         print("Acc: ", torch.sum(torch.argmax(out, dim=1)==y.to(device)).item()/10000)
-        idcorr.append(id_correlation(rep.to(device), x, N=100)['p'])
+        idcorr.append(id_correlation(rep.to(device), x, N=100)['corr'])
         dcorr.append(distance_correlation(rep.to(device), x))
-        cka.append(linear_cka(rep.to(device), x).cpu())
+        cka.append(rbf_cka(rep.to(device), x).cpu())
         cca.append(1-svcca_distance(rep.to(device), x, accept_rate=0.99, backend='svd').cpu())
-    
+plt.plot(idcorr, label='idcorr (ours)')
+plt.plot(dcorr, label='dcorr')
+plt.plot(cca, label='cca')
+plt.plot(cka, label='cka')
+plt.legend()
+plt.savefig('mnist_random.png')
 exit()
 for x, y in trainloader:
         x = x.view(x.size(0), -1)

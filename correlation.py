@@ -23,7 +23,7 @@ device='cuda' if torch.cuda.is_available() else 'cpu'
 
 ids=torch.zeros(len(models))
 pvalues=torch.zeros(len(models), len(models))
-zscores=torch.zeros(len(models), len(models))
+idcorr=torch.zeros(len(models), len(models))
 noshuffle=torch.zeros(len(models), len(models))
 shuffle_mean=torch.zeros(len(models), len(models))
 shuffle_std=torch.zeros(len(models), len(models))
@@ -37,16 +37,11 @@ for i, model1 in enumerate(tqdm(models)):
     for j, model2 in enumerate(models[i:]):
         rep2=torch.load(f'./representations/{args.dataset}/{model2}')[P]
         corr=id_correlation(rep1, rep2, 200, id_alg)
-        zscores[i,j+i]=corr['Z']
+        idcorr[i,j+i]=corr['corr']
         pvalues[i,j+i]=corr['p']
-        noshuffle[i,j+i]=corr['original Id']
-        shuffle_mean[i,j+i]=corr['Mean shuffled Id']
-        shuffle_std[i,j+i]=corr['Std shuffled Id']
+        noshuffle[i,j+i]=corr['id']
 torch.save(ids, f'results/{args.dataset}/ids.pt')
 torch.save(pvalues, f'results/{args.dataset}/pvalues.pt')
-torch.save(zscores, f'results/{args.dataset}/zscores.pt')
+torch.save(idcorr, f'results/{args.dataset}/idcorr.pt')
 torch.save(noshuffle, f'results/{args.dataset}/noshuffle.pt')
-torch.save(shuffle_mean, f'results/{args.dataset}/shuffle_mean.pt')
-torch.save(shuffle_std, f'results/{args.dataset}/shuffle_std.pt')
-
 
