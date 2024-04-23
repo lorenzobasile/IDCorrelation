@@ -16,7 +16,7 @@ def make_sym(matrix):
     sym=matrix+matrix.T
     sym[np.diag_indices_from(sym)] /= 2
     return sym
-if args.dataset=='imagenet':
+if 'imagenet' in args.dataset:
     model_list = np.array([
             'google_efficientnet-b0',
             'google_siglip-base-patch16-224',
@@ -74,16 +74,16 @@ results=torch.load(path)
 
 fig, ax = plt.subplots(figsize=(14, 11))
 
-if args.dataset=='imagenet':
-    sns.heatmap(make_sym(results.numpy()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+if 'imagenet' in args.dataset:
+    sns.heatmap(make_sym(results.numpy()), vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
 else:
-    sns.heatmap(make_sym(results.numpy())[idx][:,idx], ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    sns.heatmap(make_sym(results.numpy())[idx][:,idx], vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
 
 #plt.title('$I_d$ correlation p-value', fontsize=20)
 plt.xticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=45)
 plt.yticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=0)
 
-if args.dataset!='imagenet':
+if 'imagenet' not in args.dataset:
    # Add second layer of labels
     second_layer_labels_x = ['TEXT', 'IMAGE']
     second_layer_labels_y = ['TEXT', 'IMAGE']
