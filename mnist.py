@@ -1,6 +1,5 @@
 import torch
 from utils import metrics
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 from anatome.similarity import svcca_distance
 import torchvision
@@ -30,6 +29,7 @@ class MLP(torch.nn.Module):
     
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 idcorr = []
+pvalues = []
 dcor = []
 rbf_cka = []
 linear_cka = []
@@ -37,34 +37,26 @@ cca = []
 for slope in tqdm(torch.arange(1, -0.01, -0.01)):
     model = MLP(10, slope).to(device)
     loss = torch.nn.CrossEntropyLoss()
-    '''
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    for epoch in range(10):
-        for x, y in trainloader:
-            x = x.to(device)
-            y = y.to(device)
-            out, _ = model(x)
-            l = loss(out, y)
-            optimizer.zero_grad()
-            l.backward()
-            optimizer.step()
-    '''
     with torch.no_grad():
         x, y = next(iter(testloader))
         x=x.to(device)
         out, rep = model(x.to(device))
-        idcorr.append(metrics.id_correlation(rep.to(device), x, N=1)['corr'])
+        icorrdc=metrics.id_correlation(rep.to(device), x, 200)
+        idcorr.append(corr['corr'])
+        pvalues.append(corr['p'])
         dcor.append(metrics.distance_correlation(rep.to(device), x))
         rbf_cka.append(metrics.rbf_cka(rep.to(device), x).cpu())
         linear_cka.append(metrics.linear_cka(rep.to(device), x).cpu())
         cca.append(1-svcca_distance(rep.to(device), x, accept_rate=0.99, backend='svd').cpu())
 idcorr=torch.tensor(idcorr)
+pvalues=torch.tensor(pvalues)
 dcor=torch.tensor(dcor)
 rbf_cka=torch.tensor(rbf_cka)
 linear_cka=torch.tensor(linear_cka)
 cca=torch.tensor(cca)
 
 torch.save(idcorr, 'results/mnist/idcorr.pt')
+torch.save(pvalues, 'results/mnist/pvalues.pt')
 torch.save(dcor, 'results/mnist/dcor.pt')
 torch.save(rbf_cka, 'results/mnist/rbf_cka.pt')
 torch.save(linear_cka, 'results/mnist/linear_cka.pt')

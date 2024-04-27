@@ -72,16 +72,18 @@ else:
 
 results=torch.load(path)
 
-fig, ax = plt.subplots(figsize=(14, 11))
+fig, ax = plt.subplots(figsize=(14, 11) if 'idcorr' in args.metric else (11, 11))
 
 if 'imagenet' in args.dataset:
-    sns.heatmap(make_sym(results.numpy()), vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    sns.heatmap(make_sym(results.numpy()), vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar='idcorr' in args.metric)
 else:
-    sns.heatmap(make_sym(results.numpy())[idx][:,idx], vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 12})
+    sns.heatmap(make_sym(results.numpy())[idx][:,idx], vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar='idcorr' in args.metric)
 
 #plt.title('$I_d$ correlation p-value', fontsize=20)
-plt.xticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=45)
-plt.yticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=0)
+#change font size of ticks
+
+plt.xticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=45, fontsize=16)
+plt.yticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=0, fontsize=16)
 
 if 'imagenet' not in args.dataset:
    # Add second layer of labels
@@ -92,9 +94,9 @@ if 'imagenet' not in args.dataset:
     plt.axvline(len(model_names)/2, color='k', linewidth=1.5)
 
     for i, label in enumerate(second_layer_labels_x):
-        plt.text((len(model_names)/4)*(2*i+1), len(model_names)+1., label, ha='center', va='center', fontsize=16)
+        plt.text((len(model_names)/4)*(2*i+1), len(model_names)+1.5, label, ha='center', va='center', fontsize=18)
 
     for i, label in enumerate(second_layer_labels_y):
-        plt.text(-1.2, (len(model_names)/4)*(2*i+1), label, ha='center', va='center', rotation=90, fontsize=16)
+        plt.text(-1.7, (len(model_names)/4)*(2*i+1), label, ha='center', va='center', rotation=90, fontsize=18)
 
 plt.savefig(path[:-2]+"svg", dpi=200, bbox_inches='tight', format='svg')
