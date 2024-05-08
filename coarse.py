@@ -1,8 +1,8 @@
 import torch
 from tqdm import tqdm
-from utils.metrics import id_correlation, distance_correlation, linear_cka, rbf_cka
+from utils import metrics
 from anatome.similarity import svcca_distance
-from utils.utils import align_across, shuffle_keeping_class
+from utils.utils import shuffle_keeping_class
 import os
 
 torch.manual_seed(0)
@@ -29,14 +29,15 @@ for i, model in enumerate(tqdm(models)):
     if i==0:
         P=torch.randperm(len(rep1))[:N]
     rep1=rep1[P]
-    rep2=rep2[P]
-    corr=id_correlation(rep1, rep2, 200, id_alg, return_pvalue=True)
+    rep2=rep2[P][torch.randperm(N)]
+    corr=metrics.id_correlation(rep1, rep2, 200, id_alg, return_pvalue=True)
     idcorr.append(corr['corr'])
     pvalues.append(corr['p'])
-    dcor.append(distance_correlation(rep1.to(device), rep2.to(device)))
-    rbf_cka.append(rbf_cka(rep1.to(device), rep2.to(device)).cpu())
-    linear_cka.append(linear_cka(rep1.to(device), rep2.to(device)).cpu())
+    dcor.append(metrics.distance_correlation(rep1.to(device), rep2.to(device)))
+    rbf_cka.append(metrics.rbf_cka(rep1.to(device), rep2.to(device)).cpu())
+    linear_cka.append(metrics.linear_cka(rep1.to(device), rep2.to(device)).cpu())
     cca.append(1-svcca_distance(rep1.to(device), rep2.to(device), accept_rate=0.99, backend='svd').cpu())
+    print(idcorr, pvalues, dcor, rbf_cka, linear_cka, cca)
 idcorr=torch.tensor(idcorr)
 pvalues=torch.tensor(pvalues)
 dcor=torch.tensor(dcor)
@@ -44,9 +45,12 @@ rbf_cka=torch.tensor(rbf_cka)
 linear_cka=torch.tensor(linear_cka)
 cca=torch.tensor(cca)
 
+
+'''
 torch.save(idcorr, 'results/coarse/idcorr.pt')
 torch.save(pvalues, 'results/coarse/pvalues.pt')
 torch.save(dcor, 'results/coarse/dcor.pt')
 torch.save(rbf_cka, 'results/coarse/rbf_cka.pt')
 torch.save(linear_cka, 'results/coarse/linear_cka.pt')
 torch.save(cca, 'results/coarse/svcca.pt')
+'''
