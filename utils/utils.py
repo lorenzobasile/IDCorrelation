@@ -6,7 +6,8 @@ def shuffle(data):
     return data[torch.randperm(len(data))]
 def normalize(data):
     if len(data.shape)>1 and data.shape[1]>1:
-        return torch.nn.functional.normalize(data)
+        return (data-data.mean(0))/(data.std(0)+1e-9)
+        #return torch.nn.functional.normalize(data)
     else:
         return data
 
