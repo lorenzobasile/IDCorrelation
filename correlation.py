@@ -32,7 +32,6 @@ for i, model1 in enumerate(tqdm(models)):
     if i==0:
         P=torch.randperm(len(rep1))[:N]
     rep1=rep1[P]
-    #rep1=shuffle_keeping_class(rep1, labels)
     ids[i]=estimate_id(rep1.to(device), id_alg).item()
     for j, model2 in enumerate(models[i:]):
         rep2=torch.load(f'./representations/{args.dataset}/{model2}')[P]
