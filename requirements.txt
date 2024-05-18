@@ -1,0 +1,11 @@
+datasets==2.18.0
+matplotlib==3.8.4
+numpy==1.26.4
+pandas==2.2.2
+Pillow==10.3.0
+seaborn==0.13.2
+torch==2.2.2
+torchvision==0.17.2
+tqdm==4.66.2
+transformers==4.39.3
+ultimate_anatome==0.1.1
