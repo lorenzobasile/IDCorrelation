@@ -2,12 +2,12 @@ import functools
 import math
 import torch
 from utils.intrinsic_dimension import estimate_id
-from utils.utils import cat, normalize, shuffle
+from utils.utils import cat, normalize, shuffle, standardize
 
 
 def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN', return_pvalue=True):
-    dataset1=normalize(dataset1)
-    dataset2=normalize(dataset2)
+    dataset1=standardize(dataset1)
+    dataset2=standardize(dataset2)
     device='cuda' if torch.cuda.is_available() else 'cpu'
     id_1 = estimate_id(dataset1.to(device), algorithm).item()
     id_2 = estimate_id(dataset2.to(device), algorithm).item()
@@ -28,8 +28,8 @@ def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN', return_pvalue=T
 
 
 def distance_correlation(latent, control):
-    latent = torch.nn.functional.normalize(latent)
-    control = torch.nn.functional.normalize(control)
+    latent = normalize(latent)
+    control = normalize(control)
     matrix_a = torch.cdist(latent, latent)
     matrix_b = torch.cdist(control, control)
     matrix_A = matrix_a - torch.mean(matrix_a, dim = 0, keepdims= True) - torch.mean(matrix_a, dim = 1, keepdims= True) + torch.mean(matrix_a)

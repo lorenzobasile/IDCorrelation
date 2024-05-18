@@ -16,6 +16,10 @@ def make_sym(matrix):
     sym=matrix+matrix.T
     sym[np.diag_indices_from(sym)] /= 2
     return sym
+
+def offdiagonal(matrix):
+    np.fill_diagonal(matrix, 0)
+    return np.sum(matrix)/(matrix.shape[0]*(matrix.shape[0]-1))
 if 'imagenet' in args.dataset:
     model_list = np.array([
             'google_efficientnet-b0',
@@ -35,7 +39,7 @@ if 'imagenet' in args.dataset:
             'ViT-hybrid',
             'ViT-L-16-224',
             'ResNet',
-            'CLIP-V',
+            'CLIP',
             ])
 else:
     model_list = np.array(['albert_albert-base-v2',
@@ -69,21 +73,33 @@ else:
     model_names=model_names[idx]
     isvision=isvision[idx]
 
-
+metric_names={
+        'idcor':'$I_d$cor',
+        'dcor':'dCor',
+        'rbf_cka':'CKA (RBF)',
+        'linear_cka':'CKA (linear)',
+        'svcca':'SVCCA',
+        'pvalues':'p-values',
+        
+}
 results=torch.load(path)
 
-fig, ax = plt.subplots(figsize=(14, 11) if 'idcorr' in args.metric else (11, 11))
+#fig, ax = plt.subplots(figsize=(14, 11) if 'idcorr' in args.metric else (11, 11))
+fig, ax = plt.subplots(figsize=(14, 11))
 
 if 'imagenet' in args.dataset:
-    sns.heatmap(make_sym(results.numpy()), vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar='idcorr' in args.metric)
+    ax=sns.heatmap(make_sym(results.numpy()), vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar=True)#'idcorr' in args.metric)
 else:
-    sns.heatmap(make_sym(results.numpy())[idx][:,idx], vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar='idcorr' in args.metric)
-
-#plt.title('$I_d$ correlation p-value', fontsize=20)
+    ax=sns.heatmap(make_sym(results.numpy())[idx][:,idx], vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar=True)#, cbar='idcorr' in args.metric)
+print(f"Off diagonal mean for {args.metric}: {offdiagonal(make_sym(results.numpy()))}")
+cbar = ax.collections[0].colorbar
+# here set the labelsize by 20
+cbar.ax.tick_params(labelsize=16)
+plt.title(metric_names[args.metric], fontsize=40)
 #change font size of ticks
 
-plt.xticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=45, fontsize=16)
-plt.yticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=0, fontsize=16)
+plt.xticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=45, fontsize=18)
+plt.yticks(ticks=np.arange(0.5, len(model_names)+0.5), labels=model_names, rotation=0, fontsize=18)
 
 if 'imagenet' not in args.dataset:
    # Add second layer of labels
