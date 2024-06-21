@@ -74,7 +74,7 @@ else:
     isvision=isvision[idx]
 
 metric_names={
-        'idcor':'$I_d$cor',
+        'idcor':'$I_d$Cor',
         'dcor':'dCor',
         'rbf_cka':'CKA (RBF)',
         'linear_cka':'CKA (linear)',
