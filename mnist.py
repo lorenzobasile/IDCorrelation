@@ -3,6 +3,7 @@ from utils import metrics
 from tqdm import tqdm
 from anatome.similarity import svcca_distance
 import torchvision
+import os
 
 torch.manual_seed(0)
 
@@ -10,6 +11,10 @@ torch.manual_seed(0)
 transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),torchvision.transforms.Lambda(torch.flatten)])
 testset = torchvision.datasets.MNIST(f'./data/', transform=transform, train=False, download=True)
 testloader = torch.utils.data.DataLoader(testset, batch_size=10000, shuffle=False)
+
+if not os.path.exists('results/mnist'):
+    os.makedirs('results/mnist')
+
 
 class MLP(torch.nn.Module):
     def __init__(self, num_layers):

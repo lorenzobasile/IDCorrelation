@@ -31,13 +31,13 @@ with torch.no_grad():
     representations=[]
     labels=[]
     for i, x, in tqdm(enumerate(dataloader)):
-        N=len(x)
         if modality=='text':
             x=processor(x, padding=True, truncation=True, return_tensors="pt")
         else:
             if 'imagenet' in args.dataset:
                 x,y=x
                 labels.append(y)
+            N=len(x)
             x=processor(x, return_tensors="pt")
         out = model(**x.to(device), output_hidden_states=True)
         if conv or 'siglip' in args.model:
