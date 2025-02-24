@@ -11,6 +11,8 @@ def MLE(X, k=100, full_output=False):
     X=X.float()
     X=torch.cdist(X,X)
     Y=torch.topk(X, k+1, dim=1, largest=False)[0][:,1:]
+    mask = (Y != 0).all(dim=1)
+    Y = Y[mask]
     Y=torch.log(torch.reciprocal(torch.div(Y, Y[:,-1].reshape(-1,1))))
     dim=torch.reciprocal(1/(k-1)*torch.sum(Y, dim=1))
     return dim if full_output else dim.mean()

@@ -5,21 +5,20 @@ from utils.intrinsic_dimension import estimate_id
 from utils.utils import cat, normalize, shuffle, standardize
 
 
-def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN', return_pvalue=True):
+def id_correlation(dataset1, dataset2, N=100, algorithm='twoNN', return_pvalue=True, k=100):
     dataset1=standardize(dataset1)
     dataset2=standardize(dataset2)
     device='cuda' if torch.cuda.is_available() else 'cpu'
-    id_1 = estimate_id(dataset1.to(device), algorithm).item()
-    id_2 = estimate_id(dataset2.to(device), algorithm).item()
-    max_id = max(id_1, id_2)
+    id_1 = estimate_id(dataset1.to(device), algorithm, k).item()
+    id_2 = estimate_id(dataset2.to(device), algorithm, k).item()
     upper_bound = id_1+id_2
     lower_bound = min(id_1, id_2)
-    original_id = estimate_id(cat([dataset1, dataset2]).to(device), algorithm).item()
+    original_id = estimate_id(cat([dataset1, dataset2]).to(device), algorithm, k).item()
     corr= (upper_bound - original_id) / (upper_bound - lower_bound)
     if return_pvalue:
         shuffled_id=torch.zeros(N, dtype=torch.float)
         for i in range(N):
-            shuffled_id[i]=estimate_id(cat([dataset1, shuffle(dataset2)]).to(device), algorithm).item()
+            shuffled_id[i]=estimate_id(cat([dataset1, shuffle(dataset2)]).to(device), algorithm, k).item()
         p=(((shuffled_id<original_id).sum()+1)/(N+1)).item() #according to permutation test
     else:
         p=None

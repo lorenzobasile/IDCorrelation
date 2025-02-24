@@ -30,6 +30,7 @@ if 'imagenet' in args.dataset:
             'google_vit-large-patch16-224',
             'microsoft_resnet-18',
             'openai_clip-v-vit-base-patch16',
+            'salesforce-blip'
             ])
     model_names = np.array([
             'EfficientNet',
@@ -40,6 +41,7 @@ if 'imagenet' in args.dataset:
             'ViT-L-16-224',
             'ResNet',
             'CLIP',
+            'BLIP'
             ])
 else:
     model_list = np.array(['albert_albert-base-v2',
@@ -80,9 +82,11 @@ metric_names={
         'linear_cka':'CKA (linear)',
         'svcca':'SVCCA',
         'pvalues':'p-values',
+        'rtd': 'RTD'
         
 }
 results=torch.load(path)
+
 
 #fig, ax = plt.subplots(figsize=(14, 11) if 'idcorr' in args.metric else (11, 11))
 fig, ax = plt.subplots(figsize=(14, 11))
@@ -90,7 +94,10 @@ fig, ax = plt.subplots(figsize=(14, 11))
 if 'imagenet' in args.dataset:
     ax=sns.heatmap(make_sym(results.numpy()), vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar=True)#'idcorr' in args.metric)
 else:
-    ax=sns.heatmap(make_sym(results.numpy())[idx][:,idx], vmin=0, vmax=1, ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar=True)#, cbar='idcorr' in args.metric)
+    if args.metric=='rtd':
+        ax=sns.heatmap(make_sym(results.numpy())[idx][:,idx], vmin=0, vmax=max(1,results.max()), ax=ax, annot=True, cmap='Blues_r', annot_kws={"fontsize": 16}, cbar=True)#, cbar='idcorr' in args.metric)
+    else:
+        ax=sns.heatmap(make_sym(results.numpy())[idx][:,idx], vmin=0, vmax=max(1,results.max()), ax=ax, annot=True, cmap='Blues', annot_kws={"fontsize": 16}, cbar=True)#, cbar='idcorr' in args.metric)
 print(f"Off diagonal mean for {args.metric}: {offdiagonal(make_sym(results.numpy()))}")
 cbar = ax.collections[0].colorbar
 # here set the labelsize by 20
@@ -115,4 +122,4 @@ if 'imagenet' not in args.dataset:
     for i, label in enumerate(second_layer_labels_y):
         plt.text(-1.7, (len(model_names)/4)*(2*i+1), label, ha='center', va='center', rotation=90, fontsize=18)
 
-plt.savefig(path[:-2]+"svg", dpi=200, bbox_inches='tight', format='svg')
+plt.savefig(path[:-2]+"pdf", dpi=200, bbox_inches='tight', format='pdf')
