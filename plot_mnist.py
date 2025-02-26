@@ -14,12 +14,54 @@ rbf_cka=torch.load('results/mnist/rbf_cka.pt')
 linear_cka=torch.load('results/mnist/linear_cka.pt')
 svcca=torch.load('results/mnist/svcca.pt')
 plt.figure(figsize=(13.1, 6))
-plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], idcor[::2], 'o-', label='$I_d$Cor')
-plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], dcor[::2], 'o-', label='dCor')
-plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], linear_cka[::2], 'o-', label='CKA (linear)')
-plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], rbf_cka[::2], 'o-', label='CKA (RBF)')
-plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], svcca[::2], 'o-', label='SVCCA')
-plt.legend(fontsize=13.5)
+x_values = torch.arange(0.00, 1.01, 0.02)[::2]
+
+# Plot each curve with shaded error regions
+plt.plot(x_values, idcor.mean(dim=0)[::2], 'o-', label='$I_d$Cor')
+plt.fill_between(
+    x_values,
+    idcor.mean(dim=0)[::2] - idcor.std(dim=0)[::2],   # Lower bound
+    idcor.mean(dim=0)[::2] + idcor.std(dim=0)[::2],   # Upper bound
+    alpha=0.2  # Transparency for the shaded area
+)
+
+plt.plot(x_values, dcor.mean(dim=0)[::2], 'o-', label='dCor')
+plt.fill_between(
+    x_values,
+    dcor.mean(dim=0)[::2] - dcor.std(dim=0)[::2],
+    dcor.mean(dim=0)[::2] + dcor.std(dim=0)[::2],
+    alpha=0.2
+)
+
+plt.plot(x_values, linear_cka.mean(dim=0)[::2], 'o-', label='CKA (linear)')
+plt.fill_between(
+    x_values,
+    linear_cka.mean(dim=0)[::2] - linear_cka.std(dim=0)[::2],
+    linear_cka.mean(dim=0)[::2] + linear_cka.std(dim=0)[::2],
+    alpha=0.2
+)
+
+plt.plot(x_values, rbf_cka.mean(dim=0)[::2], 'o-', label='CKA (RBF)')
+plt.fill_between(
+    x_values,
+    rbf_cka.mean(dim=0)[::2] - rbf_cka.std(dim=0)[::2],
+    rbf_cka.mean(dim=0)[::2] + rbf_cka.std(dim=0)[::2],
+    alpha=0.2
+)
+
+plt.plot(x_values, svcca.mean(dim=0)[::2], 'o-', label='SVCCA')
+plt.fill_between(
+    x_values,
+    svcca.mean(dim=0)[::2] - svcca.std(dim=0)[::2],
+    svcca.mean(dim=0)[::2] + svcca.std(dim=0)[::2],
+    alpha=0.2
+)
+#plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], idcor.mean(dim=0)[::2], 'o-', label='$I_d$Cor')
+#plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], dcor.mean(dim=0)[::2], 'o-', label='dCor')
+#plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], linear_cka.mean(dim=0)[::2], 'o-', label='CKA (linear)')
+#plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], rbf_cka.mean(dim=0)[::2], 'o-', label='CKA (RBF)')
+#plt.plot(torch.arange(0.00, 1.01, 0.02)[::2], svcca.mean(dim=0)[::2], 'o-', label='SVCCA')
+plt.legend(fontsize=13.5, loc='lower left')
 plt.yticks(fontsize=12)
 plt.xticks(ticks=np.arange(0.0, 1.1, 0.2), labels=[1.0, 0.8, 0.6, 0.4, 0.2, 0.0], fontsize=12)
 plt.ylabel('Correlation', fontsize=20)

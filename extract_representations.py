@@ -39,6 +39,11 @@ with torch.no_grad():
                 labels.append(y)
             N=len(x)
             x=processor(x, return_tensors="pt")
+        if 'blip' in args.model:
+            out = model.vision_model(**x.to(device), output_hidden_states=True)
+            reps = torch.nn.functional.normalize(model.vision_proj(out[0][:,0,:]))
+            representations.append(reps.detach().cpu())
+            continue
         out = model(**x.to(device), output_hidden_states=True)
         if conv or 'siglip' in args.model:
             reps = out['pooler_output'].reshape(N, -1)

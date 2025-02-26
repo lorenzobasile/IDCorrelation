@@ -1,4 +1,5 @@
 from transformers import CLIPImageProcessor, CLIPVisionModelWithProjection, CLIPTokenizer, CLIPTextModelWithProjection
+from transformers import BlipImageProcessor, BlipForImageTextRetrieval
 from transformers import ViTImageProcessor, ViTModel
 from transformers import AutoImageProcessor, ResNetModel
 from transformers import ViTHybridImageProcessor, ViTHybridModel
@@ -24,6 +25,10 @@ def get_model(model_name):
         clf=False
         conv=False
         return SiglipImageProcessor.from_pretrained(model_name), SiglipVisionModel.from_pretrained(model_name), clf, conv, 'image'
+    elif 'blip' in model_name:
+        clf=False
+        conv=False
+        return BlipImageProcessor.from_pretrained(model_name), BlipForImageTextRetrieval.from_pretrained(model_name), clf, conv, 'image'
     elif 'resnet' in model_name:
         clf=True
         conv=True
