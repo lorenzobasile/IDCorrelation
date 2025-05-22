@@ -9,3 +9,6 @@ torchvision==0.17.2
 tqdm==4.66.2
 transformers==4.39.3
 ultimate_anatome==0.1.1
+
+git+https://github.com/simonzhang00/ripser-plusplus.git
+git+https://github.com/IlyaTrofimov/RTD.git
